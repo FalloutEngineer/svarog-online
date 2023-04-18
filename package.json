@@ -1,0 +1,26 @@
+{
+  "name": "svarog-online",
+  "version": "1.0.0",
+  "description": "MMO game bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon index.js"
+  },
+  "keywords": [
+    "MMO",
+    "Bot",
+    "Game",
+    "Slavic",
+    "Svarog",
+    "Pagan",
+    "Fantasy"
+  ],
+  "author": "RustonMartin",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "mongoose": "^7.0.3",
+    "node-telegram-bot-api": "^0.61.0",
+    "nodemon": "^2.0.22"
+  }
+}

@@ -1,0 +1,8 @@
+{
+    "fists": {
+        "name": "fists",
+        "type": "meele",
+        "damage": 10,
+        "baseMissChance": 1
+    }
+}

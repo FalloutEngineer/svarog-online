@@ -1,0 +1,9 @@
+{
+    "startMaxHP": 100,
+    "startHP": 100,
+    "startLVL": 0,
+    "startXP": 0,
+    "startMoney": 0,
+    "baseRegenerationValue": 10,
+    "hitProbability": 75
+}

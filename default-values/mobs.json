@@ -1,0 +1,22 @@
+{
+    "lizard":{
+        "name": "Ящур",
+        "maxHP": 50,
+        "weapon": {
+            "name": "Когті",
+            "type": "meele",
+            "damage": 5
+        },
+        "lvl": 1,
+        "headArmor": null,
+        "bodyArmor": {
+            "name": "Лахміття",
+            "basePhysicalResist": 0
+        },
+        "footArmor": {
+            "name": "Повязки",
+            "basePhysicalResist": 0
+        },
+        "hitProbability": 50
+    }
+}
