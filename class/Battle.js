@@ -70,10 +70,15 @@ module.exports = class Battle{
         let temp = this._currentActor;
         this._currentActor = this._nextActor;
         this._nextActor = temp;
+        this._article.currentActor = this._currentActor;
+        this._article.nextActor = this._nextActor;
     }
 
     start(){
         this._stage = 1;
+
+        this._article.currentActor = this._firstOpponent;
+        this._article._nextActor = this._secondOpponent;
 
         if(this._firstOpponent.enterBattle){
             this._firstOpponent.enterBattle();
@@ -83,9 +88,14 @@ module.exports = class Battle{
         }
     }
 
-    end(){
+    end(actor){
+
+        this._article._winner = actor;
+        this._article.updateEndMessage();
+        // this._article.updateMessage();
+
         this._stage = 2;
-        this._winner = this._currentActor;
+        this._winner = actor;
 
         if(this._firstOpponent.exitBattle){
             this._firstOpponent.exitBattle();
@@ -100,27 +110,33 @@ module.exports = class Battle{
     }
 
     async autoBattle(){
-        this._article._user = this._firstOpponent;
+        this._article._firstOpponent = this._firstOpponent;
         this._article._secondOpponent = this._secondOpponent;
         while(this._stage != 2){
             await this.timeout(1000);
-            console.log(`[Крок ${this._currentStep}]`);
             this._article.step = this._currentStep;
-            this._article.updateMessage();
             if(this.isNextActorDead()){
-                this.end()
+                this._stage = 2;
+                this.end(this._currentActor)
+                return;
+            }
+            if(this.isCurrentActorDead()){
+                this._stage = 2;
+                this.end(this._nextActor)
                 return;
             }
             const attackAnswer = this._currentActor.attack(this._nextActor);
             if(attackAnswer.answer.isMiss){
-                console.log(this._currentActor.soundEmitter.miss);
+                this._article.appendToHistory(this._currentActor.soundEmitter.miss);
             }else{
-                console.log(this._currentActor.soundEmitter.attack(this._nextActor.name));
-                console.log(this._nextActor.soundEmitter.ouch());
+                this._article.appendToHistory(this._currentActor.soundEmitter.attack(this._nextActor.name));
+                this._article.appendToHistory(this._nextActor.soundEmitter.ouch());
             }
             this._article._user = this._firstOpponent;
             this.nextStep();
+            this._article.updateMessage();
         }
+
         return this.winner;
     }
 

@@ -96,7 +96,6 @@ module.exports = class Mob{
             let damageCount = damage;
 
             if(damageCount > 0){
-                // damageCount = damageCount * -1;
                 damageCount = 0;
             }
             const healthAfterDamage = this._currentHP - damage;
@@ -106,8 +105,6 @@ module.exports = class Mob{
             }else{
                 this._currentHP = healthAfterDamage;
             }
-
-            // console.log(this.soundEmitter.ouch());
         }
         const answer = {
             code: 100,
@@ -158,27 +155,10 @@ module.exports = class Mob{
             answer.weapon = this.weapon;
             if(hitNumber < this.hitProbability){
                 target.takeDamage(this.weapon.damage);
-                // console.log(this.soundEmitter.attack(target.name));
             }else{
                 answer.isMiss = true;
-                
-                // console.log(this.soundEmitter.miss());
             }
         }
         return answer;
-
-        // if(miss < 50){
-        //     if(this.weapon){
-        //         if(!isNaN(this.weapon.baseDamage)){
-        //             target.takeDamage(this.weapon.baseDamage);
-        //             console.log(this.soundEmitter.attack());
-        //         }
-        //     }else{
-        //         target.takeDamage(0);
-        //         console.log(this.soundEmitter.attack());
-        //     }
-        // }else{
-        //     console.log(this.soundEmitter.miss());
-        // }
     }
 }

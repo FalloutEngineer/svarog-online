@@ -1,17 +1,18 @@
-const user = require("../models/user");
-const Battle = require("../class/Battle");
-
 module.exports = class BattleArticle{
-    constructor(user, secondOpponent, id, bot){
+    constructor(firstOpponent, secondOpponent, id, bot){
         this._battleId = null;
         this._id = id;
         this._selectedRewardId = 0;
-        this._user = user;
+        this._firstOpponent = firstOpponent;
         this._secondOpponent = secondOpponent;
         this._bot = bot;
         this._step = 0;
         this._hp = 100;
+        this._winner = firstOpponent;
         this._articleId = null;
+        this._history = [];
+        this._currentActor = firstOpponent;
+        this._nextActor = secondOpponent;
         this._battleMessage = {
             reply_markup:{
                 inline_keyboard:[
@@ -66,8 +67,8 @@ ${this.award}
         };
     }
 
-    get winnerName(){
-        return this._user.hero.name;
+    get winner(){
+        return this._winner;
     }
 
     get battleStage(){
@@ -83,7 +84,7 @@ ${this.award}
     }
 
     get history(){
-        return 'Тут буде історія'
+        return this._history;
     }
 
     get title(){
@@ -131,35 +132,158 @@ ${conditionalRewards}`
         return rewardMessage;
     }
 
-    // get(){
-    //     return this._article;
-    // }
-
     set step(step){
         this._step = step;
     }
 
-    set user(us){
-        this._user = us;
+    set firstOpponent(us){
+        this._firstOpponent = us;
+    }
+
+    get historyLastActions(){
+        return this.history
+    }
+
+    get currentActor(){
+        return this._currentActor;
+    }
+
+    get nextActor(){
+        return this._nextActor;
+    }
+
+    set nextActor(next){
+        this._nextActor = next;
+    }
+
+    set currentActor(currentActor){
+        this._currentActor = currentActor;
     }
 
     formArticleText(){
         return `<b>[${this.title}]</b> [Крок: ${this._step}]
-[${this._user.lvl}] ${this._user.name} [${this._user.hp}/${this._user.maxHP}]❤️
-[${this._secondOpponent.lvl}] ${this._secondOpponent.name} [${this._secondOpponent.hp}/${this._secondOpponent.maxHP}]❤️
+До закінчення крока: 01:00
+${this.currentActor.name == this._firstOpponent.name ? '🔸' : ''} [${this._firstOpponent.lvl}] ${this._firstOpponent.name} [${this._firstOpponent.hp}/${this._firstOpponent.maxHP}]❤️
+${this.currentActor.name == this._secondOpponent.name ? '🔸' : ''} [${this._secondOpponent.lvl}] ${this._secondOpponent.name} [${this._secondOpponent.hp}/${this._secondOpponent.maxHP}]❤️
 --------------------Події--------------------
-${this.history}`;
+${this.history.slice(-5).map(el => `${el}\n`).join('')}`;
     }
 
     updateMessage(){
         this._bot.editMessageText(
             this.formArticleText(), 
-            {inline_message_id: this._id, parse_mode: "HTML"});
+            {inline_message_id: this._id, parse_mode: "HTML", reply_markup:{
+                inline_keyboard:[
+                    [
+                        {text: `Стаміна: 100/100`, callback_data: '{"q": "award_control", "a": "down"}'},
+                        {text: `🔮 Мана: 100/100`, callback_data: '{"q": "award_control", "a": "down"}'},
+                    ],
+                    [
+                        {text: `${this.nextActor.name} [${this.nextActor.hp}/${this.nextActor.maxHP}]`, callback_data: '{"q": "award_control", "a": "down"}'},
+                    ],
+                    [
+                        {text: '⚪️', callback_data: '{"q": "award_control", "a": "up"}'},
+                        {text: '😐', callback_data: '{"q": "award_control", "a": "down"}'},
+                        {text: '⚪️', callback_data: '{"q": "award_control", "a": "down"}'},
+                    ],
+                    [
+                        {text: '🗡', callback_data: '{"q": "award_control", "a": "take"}'},
+                        {text: '❤️', callback_data: '{"q": "award_control", "a": "take"}'},
+                        {text: '🛡', callback_data: '{"q": "award_control", "a": "take"}'},
+                    ],
+                    [
+                        {text: '⚪️', callback_data: '{"q": "award_control", "a": "takeAll"}'},
+                        {text: '🦵🦵', callback_data: '{"q": "award_control", "a": "takeAll"}'},
+                        {text: '⚪️', callback_data: '{"q": "award_control", "a": "takeAll"}'},
+                    ],
+                    [
+                        {text: '⬅️ Назад', callback_data: '{"q": "battle_control", "a": "end"}'},
+                    ]
+
+                    // [
+                    //     {text: `🫁 Стаміна: 100/100`, callback_data: '{"q": "award_control", "a": "down"}'},
+                    //     {text: `🔮 Мана: 100/100`, callback_data: '{"q": "award_control", "a": "down"}'},
+                    // ],
+                    // [
+                    //     {text: `❇️ Ефекти`, callback_data: '{"q": "award_control", "a": "down"}'},
+                    //     {text: `❔ Характеристики`, callback_data: '{"q": "award_control", "a": "down"}'},
+                    // ],
+                    // [
+                    //     {text: '🗡 Меч хряка', callback_data: '{"q": "award_control", "a": "up"}'},
+                    //     {text: '🛡 Щіт "Оу"', callback_data: '{"q": "award_control", "a": "down"}'},
+                    // ],
+                    // [
+                    //     {text: '✨ Вміння', callback_data: '{"q": "award_control", "a": "take"}'},
+                    // ],
+                    // [
+                    //     {text: '🧪 Зілля', callback_data: '{"q": "award_control", "a": "up"}'},
+                    //     {text: '👝 Предмети', callback_data: '{"q": "award_control", "a": "take"}'},
+                    // ],
+                    // [
+                    //     {text: '🏃 Втікти (33%)', callback_data: '{"q": "battle_control", "a": "end"}'},
+                    //     {text: '🚪 Здатись', callback_data: '{"q": "battle_control", "a": "end"}'},
+                    // ]
+                ]
+            },});
+    }
+
+    updateEndMessage(){
+        this._bot.editMessageText(
+            this.formEndGameMessageText(), 
+            {inline_message_id: this._id, parse_mode: "HTML", reply_markup:{
+                inline_keyboard:[
+                    [
+                        {text: 'СТОРІНКА 1 ІЗ 5', callback_data: '{"q": "award_control", "a": "up"}'},
+                    ],
+                    [
+                        {text: '🗡 МЕЧ СЛАВИ', callback_data: '{"q": "award_control", "a": "up"}'},
+                        {text: '🖐 Взяти', callback_data: '{"q": "award_control", "a": "down"}'},
+                    ],
+                    [
+                        {text: '👞 РВАНИЙ БОТІНОК ІСТІНИ', callback_data: '{"q": "award_control", "a": "up"}'},
+                        {text: '🖐 Взяти', callback_data: '{"q": "award_control", "a": "down"}'},
+                    ],
+                    [
+                        {text: '🪡 ІГЛА КОЩЄЯ', callback_data: '{"q": "award_control", "a": "up"}'},
+                        {text: '🖐 Взяти', callback_data: '{"q": "award_control", "a": "down"}'},
+                    ],
+                    [
+                        {text: '🪖 ШЛЄМ ГОЛОВАСТІКА', callback_data: '{"q": "award_control", "a": "up"}'},
+                        {text: '🖐 Взяти', callback_data: '{"q": "award_control", "a": "down"}'},
+                    ],
+                    [
+                        {text: '🧢 КЄПКА ПІДАРАШКИ', callback_data: '{"q": "award_control", "a": "up"}'},
+                        {text: '🖐 Взяти', callback_data: '{"q": "award_control", "a": "down"}'},
+                    ],
+                    [
+                        {text: '⬅️', callback_data: '{"q": "award_control", "a": "takeAll"}'},
+                        {text: '➡️', callback_data: '{"q": "award_control", "a": "takeAll"}'},
+                    ],
+                    [
+                        {text: '✋🤚 Взяти все', callback_data: '{"q": "award_control", "a": "takeAll"}'},
+                    ],
+                    [
+                        {text: '🚪 Завершити бій', callback_data: '{"q": "battle_control", "a": "end"}'},
+                    ]
+                ]
+            },});
+    }
+
+    formEndGameMessageText(){
+        return `<b>[${this.title}]</b>
+Переможець: [${this.winner.lvl}] ${this.winner.name} [${this.winner.hp}/${this.winner.maxHP}]❤️!
+--------------------Нагорода--------------------
+$unconditionalReward
+`
+    }
+
+    appendToHistory(text){
+        this._history.push(text)
     }
 }
 
 // `[Ограблєніє]
-// 🔸 [${user.hero.lvl}] ${user.hero.name} [${user.hero.currentHP}/${user.hero.maxHP}]❤️
+// 🔸 [${firstOpponent.hero.lvl}] ${firstOpponent.hero.name} [${firstOpponent.hero.currentHP}/${firstOpponent.hero.maxHP}]❤️
 // 🌀 [1] Ящюр [40/50]❤️ 
 // --------------------Дії--------------------
 // Бойчінко: Вдарив [меч 1000 істин] в груди

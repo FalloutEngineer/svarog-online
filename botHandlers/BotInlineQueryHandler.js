@@ -28,8 +28,7 @@ module.exports = function(bot, poolBattleArticles, battlesPool){
             answer.push(heroArticle.get());
             answer.push(battleArticlePlaceholder.get());
         }else{
-            if(createRegexp.test(query.query)){
-                const strQuery = JSON.stringify(query.query);
+            const strQuery = JSON.stringify(query.query);
     
                 const queryShort = query.query.split(' ')[1];
     
@@ -60,19 +59,6 @@ module.exports = function(bot, poolBattleArticles, battlesPool){
                     },
                     description: `${queryShort}`,
                 }]
-            
-            }else{
-                answer = [{
-                    id: "1",
-                    type: "article",
-                    title: "Створити свиню",
-                    description: "Щоб створити героя напиши /create [ім'я героя] після @SwinepithecusBot",
-                    input_message_content:{
-                        message_text: "Щоб створити героя напиши /create [ім'я героя] після @SwinepithecusBot"
-                    },
-                }]
-            }
-            
         }
     
         await bot.answerInlineQuery(query.id, answer, {cache_time: 0});
@@ -98,14 +84,6 @@ module.exports = function(bot, poolBattleArticles, battlesPool){
 
             battle.start();
             await battle.autoBattle();
-
-
-            console.log(battle.winner.name);
-            // bot.editMessageText('123123', {
-            //     inline_message_id: inlineMessageId,
-            //     parse_mode: 'HTML',
-            //     // reply_markup: this._initMessage.reply_markup,
-            // });
         }
     })
 };

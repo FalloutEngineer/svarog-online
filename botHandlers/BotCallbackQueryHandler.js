@@ -18,9 +18,9 @@ module.exports = function(bot, botStartHandler, heroesPool, mobsPool, battlesPoo
             }
         }
     
-        if(data.t == 'g_name'){
-            UserRegistration.handle(cb, data);
-        }
+        // if(data.t == 'g_name'){
+        //     UserRegistration.handle(cb, data);
+        // }
 
         if(data.q == 'battle' && data.a == 'yashur'){
             console.log(cb);

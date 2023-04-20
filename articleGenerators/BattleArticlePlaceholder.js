@@ -15,10 +15,7 @@ module.exports = class BattleArticlePlaceholder{
             reply_markup:{
                 inline_keyboard:[
                     [
-                        {text: 'Так', callback_data: '{"q": "battle", "a": "yashur"}'},
-                    ],
-                    [
-                        {text: 'Ні', callback_data: '{"q": "battle", "a": "decline"}'},
+                        {text: 'Ок', callback_data: '{"q": "battle", "a": "ok"}'},
                     ],
                 ]
             },

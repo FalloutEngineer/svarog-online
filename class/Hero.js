@@ -228,8 +228,6 @@ module.exports = class Hero{
                 // console.log(this.soundEmitter.attack(target.name));
             }else{
                 answer.isMiss = true;
-                
-                console.log(this.soundEmitter.miss());
             }
         }
         return answer;
