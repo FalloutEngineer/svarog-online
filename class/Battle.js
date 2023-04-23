@@ -80,6 +80,9 @@ module.exports = class Battle{
         this._article.currentActor = this._firstOpponent;
         this._article._nextActor = this._secondOpponent;
 
+        this._article._firstOpponent = this._firstOpponent;
+        this._article._secondOpponent = this._secondOpponent;
+
         if(this._firstOpponent.enterBattle){
             this._firstOpponent.enterBattle();
         }
@@ -109,6 +112,21 @@ module.exports = class Battle{
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    async battle(){ //TODO: Step-by-step battle cycle
+        
+        while(this._stage != 2){
+            if(this.currentActor instanceof Hero){
+
+            }else{
+                
+            }
+        }
+
+    }
+
+
+
+    //TODO: rework for expeditions
     async autoBattle(){
         this._article._firstOpponent = this._firstOpponent;
         this._article._secondOpponent = this._secondOpponent;

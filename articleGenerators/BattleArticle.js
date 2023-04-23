@@ -175,8 +175,7 @@ ${this.history.slice(-5).map(el => `${el}\n`).join('')}`;
             {inline_message_id: this._id, parse_mode: "HTML", reply_markup:{
                 inline_keyboard:[
                     [
-                        {text: `Стаміна: 100/100`, callback_data: '{"q": "award_control", "a": "down"}'},
-                        {text: `🔮 Мана: 100/100`, callback_data: '{"q": "award_control", "a": "down"}'},
+                        {text: `🫁 Витривалість: 100/100`, callback_data: '{"q": "award_control", "a": "down"}'},
                     ],
                     [
                         {text: `${this.nextActor.name} [${this.nextActor.hp}/${this.nextActor.maxHP}]`, callback_data: '{"q": "award_control", "a": "down"}'},
@@ -201,8 +200,7 @@ ${this.history.slice(-5).map(el => `${el}\n`).join('')}`;
                     ]
 
                     // [
-                    //     {text: `🫁 Стаміна: 100/100`, callback_data: '{"q": "award_control", "a": "down"}'},
-                    //     {text: `🔮 Мана: 100/100`, callback_data: '{"q": "award_control", "a": "down"}'},
+                    //     {text: `🫁 Витривалість: 100/100`, callback_data: '{"q": "award_control", "a": "down"}'},
                     // ],
                     // [
                     //     {text: `❇️ Ефекти`, callback_data: '{"q": "award_control", "a": "down"}'},

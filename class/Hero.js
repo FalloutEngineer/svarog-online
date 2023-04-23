@@ -23,14 +23,34 @@ module.exports = class Hero{
 
         this._weapon = player.hero.weapon ?? weaponsValues.fists;
 
+        //TODO: instead off null create empty armor
         this._headArmor = player.hero.headArmor ?? null;
         this._bodyArmor = player.hero.bodyArmor ?? null;
         this._footArmor = player.hero.footArmor ?? null;
 
         this._hitProbability = baseHeroValues.hitProbability;
 
+        //TODO: change user changes and abilities when damaged
+        this._isHeadDamaged = false;
+        this._isRightHandDamaged = false;
+        this._isLeftHandDamaged = false;
+        this._isChestDamaged = false;
+        this._isLegsDamaged = false;
 
-        this.soundEmitter = {
+        //TODO:
+        this._headDamageMultiplier = 1; 
+        this._handsDamageMultiplier = 1;
+        this._chestDamageMultiplier = 1;
+        this._legsDamageMultiplier = 1;
+
+        this._isStunned = false; //TODO: if yes then reduce some characteristics. (or block some actions?)
+        this._stunDuration = 0; //In steps
+
+        this._effects = []; //TODO: maybe class?
+
+        this._soundEmitterSettings = null; //TODO: custom phrases, depends on race, pack, etc
+
+        this.soundEmitter = { //TODO: remove nick prefix, move to battle logs? Create battle logs class?
             ouch: function(){
                 if(this.hp == 0){
                     return `[${this._name}]: Я здохній`;
@@ -49,6 +69,9 @@ module.exports = class Hero{
             }.bind(this),
             revive: function(){
                 return `[${this.name}]: Оуу є, я воскрєс!`;
+            }.bind(this),
+            limbOuch: function(limbName){
+                return `[${this.name}]: Ай сламали |${limbName}|!`;
             }.bind(this)
         }
     }
@@ -121,6 +144,10 @@ module.exports = class Hero{
         return this._hitProbability;
     }
 
+    handleStun(){
+        //TODO:
+    }
+
     //methogs
 
     enterBattle() {
@@ -131,7 +158,7 @@ module.exports = class Hero{
         this._isInBattle = false;
     }
 
-    async takeDamage(damage){
+    async takeDamage(weapon){
         if(this._currentHP > 0){
             let damageCount = damage;
 
@@ -162,6 +189,54 @@ module.exports = class Hero{
 
         return answer;
     }
+
+    // async takeDamageInHead(weapon){
+    //     if(this._currentHP > 0){
+    //         let damageCount = damage;
+
+    //         if(damageCount > 0){
+    //             // damageCount = damageCount * -1;
+    //             damageCount = 0;
+    //         }
+    //         const healthAfterDamage = this._currentHP - damage;
+    //         if(healthAfterDamage <= 0){
+    //             this._currentHP = 0;
+    //             this._isDead = true;
+    //             this._updateIsDead();
+    //         }else{
+    //             this._currentHP = healthAfterDamage;
+    //         }
+
+    //         const answer = this._updateHP();
+
+    //         // console.log(this.soundEmitter.ouch());
+
+    //         return answer;
+    //     }
+    //     const answer = {
+    //         code: 100,
+    //         isError: false,
+    //         answer: this.hp
+    //     }
+
+    //     return answer;
+    // }
+
+    // async takeDamageInLegs(weapon){
+
+    // }
+
+    // async takeDamageInRightHand(wepon){
+
+    // }
+
+    // async takeDamageInLeftHand(weapon){
+
+    // }
+
+    // async takeDamageInChest(weapon){
+
+    // }
 
     async heal(health){
         let healthCount = health;

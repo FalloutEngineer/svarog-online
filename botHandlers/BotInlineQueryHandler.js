@@ -68,7 +68,6 @@ module.exports = function(bot, poolBattleArticles, battlesPool){
     bot.on('chosen_inline_result', async chosen =>{
         const inlineMessageId = chosen.inline_message_id;
 
-        console.log(chosen);
         if(chosen.result_id == 2){
             const battleUser = await getUser(chosen.from.id);
 
