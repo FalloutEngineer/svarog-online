@@ -5,7 +5,9 @@
         "weapon": {
             "name": "Когті",
             "type": "meele",
-            "damage": 5
+            "damage": 5,
+            "missFactor": 1,
+            "staminaCost": 25
         },
         "lvl": 1,
         "headArmor": null,
@@ -17,6 +19,8 @@
             "name": "Повязки",
             "basePhysicalResist": 0
         },
-        "hitProbability": 50
+        "hitProbability": 50,
+        "baseStamina": 50,
+        "baseStaminaRegenerateRate": 25
     }
 }

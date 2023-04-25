@@ -9,8 +9,8 @@ module.exports = () =>{
         return allBattles;
     }
 
-    module.getBattleById = function(battleId){
-        const index = allBattles.findIndex(arrayBattle => arrayBattle.id === battleId);
+    module.getBattleById = function(playerId){
+        const index = allBattles.findIndex(arrayBattle => arrayBattle.id === playerId);
         if(index !== -1){
             const battle = allBattles[index];
             return battle;
@@ -18,9 +18,11 @@ module.exports = () =>{
         return null;
     }
 
-    module.addToPool = (battle) =>{
+    //GET BATTLE BY USER
+
+    module.addToPool = (battle, playerId) =>{
         console.log(allBattles.length);
-        battle.id = allBattles.length;
+        battle.id = playerId;
         const oldBattle = module.getBattleById(battle.id);
         const isBattleInPool = oldBattle != null;
         if(battle instanceof Battle && !isBattleInPool){
@@ -32,10 +34,12 @@ module.exports = () =>{
     }
 
     module.removeFromPoolByBattleId = (battleId) =>{
+        console.log(battleId);
+        console.log(allBattles[0].id);
         const index = allBattles.findIndex(arrayBattle => arrayBattle.id === battleId);
         let battleName;
         if(index !== -1){
-                battleName = allBattles[index].name
+                battleName = allBattles[index].id
                 allBattles.splice(index, 1);
                 console.log(`Battle ${battleName} successfully removed!`);
             }else{

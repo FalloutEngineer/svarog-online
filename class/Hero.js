@@ -22,13 +22,20 @@ module.exports = class Hero{
         this._xp = player.hero.xp;
 
         this._weapon = player.hero.weapon ?? weaponsValues.fists;
+        this._leftHand = player.hero.leftHand ?? null;
+
+        this._maxStamina = baseHeroValues.baseStamina;
+        this._stamina = baseHeroValues.baseStamina;
+
+        this._maxStaminaRegenerateRate = baseHeroValues.baseStaminaRegenerateRate;
+        this._staminaRegenerateRate = baseHeroValues.baseStaminaRegenerateRate;
 
         //TODO: instead off null create empty armor
         this._headArmor = player.hero.headArmor ?? null;
         this._bodyArmor = player.hero.bodyArmor ?? null;
         this._footArmor = player.hero.footArmor ?? null;
 
-        this._hitProbability = baseHeroValues.hitProbability;
+        this._hitProbability = baseHeroValues.hitProbability; //TODO: personal hit probability
 
         //TODO: change user changes and abilities when damaged
         this._isHeadDamaged = false;
@@ -43,10 +50,15 @@ module.exports = class Hero{
         this._chestDamageMultiplier = 1;
         this._legsDamageMultiplier = 1;
 
+        this._isHeadBlock = false;
+        this._isChestBlock = false;
+        this._isHandsBlock = false;
+        this._isLegsBlock = false;
+
         this._isStunned = false; //TODO: if yes then reduce some characteristics. (or block some actions?)
         this._stunDuration = 0; //In steps
 
-        this._effects = []; //TODO: maybe class?
+        this._effects = []; //TODO: maybe class? ПРОХОДИЦЯ ПО ВСІМ БАФАМ ТА ДЕБАФАМ, ВИКЛИКАТЬ ЇХ. ЕФЕКТАМ ІТД ПЕРЕДАВАТЬ КОЛБЕКИ ПРИ НАКЛАДАННІ.
 
         this._soundEmitterSettings = null; //TODO: custom phrases, depends on race, pack, etc
 
@@ -72,7 +84,10 @@ module.exports = class Hero{
             }.bind(this),
             limbOuch: function(limbName){
                 return `[${this.name}]: Ай сламали |${limbName}|!`;
-            }.bind(this)
+            }.bind(this),
+            outOfStamina: function(){
+                return `[${this.name}]: Ой немічне, в мене не вистачило сил!`;
+            }.bind(this),
         }
     }
 
@@ -144,6 +159,53 @@ module.exports = class Hero{
         return this._hitProbability;
     }
 
+    get maxStamina(){
+        return this._maxStamina;
+    }
+
+    get stamina(){
+        return this._stamina;
+    }
+
+    set stamina(value){
+        if(value < 0){
+            this._stamina = 0;
+        }
+        else if(value > this._maxStamina){
+            this._stamina = this._maxStamina;
+        } else{
+            this._stamina = value;
+        }
+    }
+
+    get staminaRegenerateRate(){
+        return this._staminaRegenerateRate;
+    }
+
+    get isStunned(){
+        return this._isStunned;
+    }
+
+    get stunDuration(){
+        return this._stunDuration;
+    }
+
+    get isHeadDamged(){
+        return this._isHeadDamaged;
+    }
+    get isChestDamaged(){
+        return this._isChestDamaged;
+    }
+    get isRightHandDamaged(){
+        return this._isRightHandDamaged;
+    }
+    get isLeftHandDamaged(){
+        return this._isLeftHandDamaged;
+    }
+    get isLegsDamaged(){
+        return this._isLegsDamaged;
+    }
+
     handleStun(){
         //TODO:
     }
@@ -158,7 +220,7 @@ module.exports = class Hero{
         this._isInBattle = false;
     }
 
-    async takeDamage(weapon){
+    async takeDamage(damage){ //Rework for "damage class"
         if(this._currentHP > 0){
             let damageCount = damage;
 
@@ -177,8 +239,6 @@ module.exports = class Hero{
 
             const answer = this._updateHP();
 
-            // console.log(this.soundEmitter.ouch());
-
             return answer;
         }
         const answer = {
@@ -190,7 +250,15 @@ module.exports = class Hero{
         return answer;
     }
 
-    // async takeDamageInHead(weapon){
+    async setBlock(limb){
+
+    }
+
+    async removeBlock(){
+
+    }
+
+    // async takeDamageInHead(damage){
     //     if(this._currentHP > 0){
     //         let damageCount = damage;
 
@@ -209,8 +277,6 @@ module.exports = class Hero{
 
     //         const answer = this._updateHP();
 
-    //         // console.log(this.soundEmitter.ouch());
-
     //         return answer;
     //     }
     //     const answer = {
@@ -222,19 +288,19 @@ module.exports = class Hero{
     //     return answer;
     // }
 
-    // async takeDamageInLegs(weapon){
+    // async takeDamageInLegs(damage){
 
     // }
 
-    // async takeDamageInRightHand(wepon){
+    // async takeDamageInRightHand(damage){
 
     // }
 
-    // async takeDamageInLeftHand(weapon){
+    // async takeDamageInLeftHand(damage){
 
     // }
 
-    // async takeDamageInChest(weapon){
+    // async takeDamageInChest(damage){
 
     // }
 
@@ -255,8 +321,6 @@ module.exports = class Hero{
             const answer = this._updateHP();
     
             this.tryRevive()
-
-            // console.log(this.soundEmitter.yeah(healthCount));
 
             return answer;
         }
@@ -288,24 +352,70 @@ module.exports = class Hero{
         return answer;
     }
 
-    attack(target){
+    attack(target, limb){
         const answer = {
             code: 100,
             isError: false,
-            answer: {isMiss: false, weapon: {name: "nothing"}}
+            answer: {isMiss: false, isOutOfStamina: false, weapon: {name: "nothing"}}
         }
         const hitNumber = Math.floor(Math.random() * (100 - 0 + 1) + 0);
 
         if(this.weapon){
-            answer.weapon = this.weapon;
-            if(hitNumber < this.hitProbability){
-                target.takeDamage(this.weapon.damage);
-                // console.log(this.soundEmitter.attack(target.name));
-            }else{
-                answer.isMiss = true;
+            answer.answer.weapon = this.weapon;
+            if(this.stamina >= this.weapon.staminaCost){
+                this.drainStamina(this.weapon.staminaCost);
+                console.log(`current hero stamina: ${this.stamina}`);
+                if(hitNumber < this.hitProbability){
+                    target.takeDamage(this.weapon.damage, limb);
+                }else{
+                    answer.answer.isMiss = true;
+                }
+            } else{
+                answer.answer.isOutOfStamina = true;
             }
         }
         return answer;
+    }
+
+    strongAttack(target){
+        const answer = {
+            code: 100,
+            isError: false,
+            answer: {isMiss: false, isOutOfStamina: false, weapon: {name: "nothing"}}
+        }
+        const hitNumber = Math.floor(Math.random() * (100 - 0 + 1) + 0);
+
+        if(this.weapon){
+            answer.answer.weapon = this.weapon;
+            if(this.stamina >= this.weapon.staminaCost * 2){
+                this.drainStamina(this.weapon.staminaCost * 2);
+                console.log(`current hero stamina: ${this.stamina}`);
+                if(hitNumber < this.hitProbability){
+                    target.takeDamage(this.weapon.damage * 2);
+                }else{
+                    answer.answer.isMiss = true;
+                }
+            }else{
+                answer.answer.isOutOfStamina = true;
+            }
+        }
+        return answer;
+    }
+
+    async drainStamina(amount){
+        this.stamina -= amount;
+    }
+
+    async regenerateStamina(amount){
+        this.stamina += amount;
+    }
+
+    async restoreStaminaForStep(){
+        this.stamina += this._staminaRegenerateRate;
+    }
+
+    async actionsBeforeStep(){
+        this.restoreStaminaForStep();
     }
 
     async takeMoney(amount){

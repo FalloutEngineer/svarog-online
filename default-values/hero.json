@@ -5,5 +5,7 @@
     "startXP": 0,
     "startMoney": 0,
     "baseRegenerationValue": 10,
-    "hitProbability": 75
+    "hitProbability": 75,
+    "baseStamina": 100,
+    "baseStaminaRegenerateRate": 50
 }

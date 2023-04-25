@@ -3,6 +3,7 @@
         "name": "fists",
         "type": "meele",
         "damage": 10,
-        "missFactor": 1
+        "missFactor": 1,
+        "staminaCost": 50
     }
 }

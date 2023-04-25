@@ -79,10 +79,12 @@ module.exports = function(bot, poolBattleArticles, battlesPool){
             const battleArticle = new BattleArticle(battleUser, yashur, inlineMessageId, bot);
             const battle = new Battle(hero, yashur, battleArticle);
 
-            battlesPool.addToPool(battle);
+            battlesPool.addToPool(battle, chosen.from.id);
 
             battle.start();
-            await battle.autoBattle();
+            await battle.battle();
+
+            battlesPool.removeFromPoolByBattleId(chosen.from.id);
         }
     })
 };

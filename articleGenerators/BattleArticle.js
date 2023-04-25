@@ -13,27 +13,76 @@ module.exports = class BattleArticle{
         this._history = [];
         this._currentActor = firstOpponent;
         this._nextActor = secondOpponent;
-        this._battleMessage = {
+        this._currentBattleMessageFuncton =  this.formBattleText;
+        this._currentBattleMarkupFunction = this.formMainBattleButtons;
+        this._mainBattleMarkup = {
             reply_markup:{
                 inline_keyboard:[
                     [
-                        {text: 'Використати {weaponName}', callback_data: '{"q": "battle_control", "a": "weapon"}'},
+                        {text: `🫁 Витривалість: ${this._currentActor.stamina}/${this._currentActor.maxStamina}`, callback_data: '{"q": "award_control", "a": "down"}'},
                     ],
                     [
-                        {text: 'Навички', callback_data: '{"q": "battle_control", "a": "skills"}'},
-                        {text: 'Предмети', callback_data: '{"q": "battle_control", "a": "items"}'},
+                        {text: `❇️ Ефекти`, callback_data: '{"q": "main_battle", "a": "effects"}'},
+                        {text: `❔ Характеристики`, callback_data: '{"q": "main_battle", "a": "charact"}'},
                     ],
                     [
-                        {text: 'Уклонитись (probability)', callback_data: '{"q": "battle_control", "a": "dodge"}'},
-                        
+                        {text: '🗡 Меч хряка', callback_data: '{"q": "main_battle", "a": "weapon"}'},
+                        {text: '🛡 Щіт "Оу"', callback_data: '{"q": "main_battle", "a": "left_hand"}'},
                     ],
                     [
-                        {text: 'Втікти (probability)', callback_data: '{"q": "battle_control", "a": "escape"}'}
+                        {text: '✨ Вміння', callback_data: '{"q": "main_battle", "a": "skills"}'},
+                    ],
+                    [
+                        {text: '🧪 Зілля', callback_data: '{"q": "main_battle", "a": "up"}'},
+                        {text: '👝 Предмети', callback_data: '{"q": "main_battle", "a": "take"}'},
+                    ],
+                    [
+                        {text: '☑️ Завершити крок', callback_data: '{"q": "main_battle", "a": "end_step"}'},
+                    ],
+                    [
+                        {text: '🏃 Втекти (33%)', callback_data: '{"q": "main_battle", "a": "run"}'},
+                        {text: '🚪 Здатись', callback_data: '{"q": "main_battle", "a": "surrender"}'},
                     ]
                 ]
-            },
+            }
         }
-        this._endMessage = {
+        this._limbBattleMessage = {
+            reply_markup:{
+                inline_keyboard:[
+                    [
+                        {text: `Зараз ходить: ${this._currentActor.name}`, callback_data: '{"q": "award_control", "a": ""}'},
+                    ],
+                    [
+                        {text: `🫁 Витривалість: ${this._currentActor.stamina}/${this._currentActor.maxStamina}`, callback_data: ''},
+                    ],
+                    [
+                        {text: '☑️ Завершити крок', callback_data: '{"q": "main_battle", "a": "end_step"}'},
+                    ],
+                    [
+                        {text: `Твій ворог: ${this.nextActor.name} [${this.nextActor.hp}/${this.nextActor.maxHP}]`},
+                    ],
+                    [
+                        {text: '', callback_data: ''},
+                        {text: '😐', callback_data: ''},
+                        {text: '', callback_data: ''},
+                    ],
+                    [
+                        {text: '🗡', callback_data: '{"q": "award_control", "a": "take"}'},
+                        {text: '❤️', callback_data: '{"q": "award_control", "a": "take"}'},
+                        {text: '🛡', callback_data: '{"q": "award_control", "a": "take"}'},
+                    ],
+                    [
+                        {text: '', callback_data: ''},
+                        {text: '🦵🦵', callback_data: '{"q": "award_control", "a": "takeAll"}'},
+                        {text: '', callback_data: ''},
+                    ],
+                    [
+                        {text: '⬅️ Назад', callback_data: '{"q": "battle_control", "a": "end"}'},
+                    ],
+                ]
+            }
+        }
+        this._endMessageText = {
             input_message_content:{
                 message_text:
 `<b>[${this.title}]</b> [Перемога!]
@@ -62,8 +111,8 @@ ${this.award}
             },
         }
         this._article = {
-            input_message_content: this._battleMessage.input_message_content,
-            reply_markup: this._battleMessage.reply_markup,
+            input_message_content: this.formBattleText(),
+            reply_markup: this.formMainBattleButtons(),
         };
     }
 
@@ -160,7 +209,37 @@ ${conditionalRewards}`
         this._currentActor = currentActor;
     }
 
-    formArticleText(){
+    selectMainBattleMenu(){
+
+    }
+
+    selectLimbMenu(){
+
+    }
+
+    selectEndMenu(){
+
+    }
+
+    getMainButtons(){
+        // return 
+    }
+    
+    init(){
+        this._currentBattleMessageFuncton = this.formBattleText;
+        this._currentBattleMarkupFunction = this.formMainBattleButtons;
+        // updateMessage()
+    }
+
+    selectMarkupFunction(markupFunction){
+        this._currentBattleMarkupFunction = markupFunction;
+    }
+
+    selectMessageFunction(messageFunction){
+        this._currentBattleMessageFuncton = messageFunction;
+    }
+
+    formBattleText(){
         return `<b>[${this.title}]</b> [Крок: ${this._step}]
 До закінчення крока: 01:00
 ${this.currentActor.name == this._firstOpponent.name ? '🔸' : ''} [${this._firstOpponent.lvl}] ${this._firstOpponent.name} [${this._firstOpponent.hp}/${this._firstOpponent.maxHP}]❤️
@@ -169,61 +248,222 @@ ${this.currentActor.name == this._secondOpponent.name ? '🔸' : ''} [${this._se
 ${this.history.slice(-5).map(el => `${el}\n`).join('')}`;
     }
 
+    formMainBattleButtons(){
+        return {inline_keyboard:[
+            [
+                {text: `Зараз ходить: ${this._currentActor.name}`, callback_data: '{"q": "award_control", "a": ""}'},
+            ],
+            [
+                {text: `🫁 Витривалість: ${this._currentActor.stamina}/${this._currentActor.maxStamina}`, callback_data: '{"q": "award_control", "a": ""}'},
+            ],
+            [
+                {text: '☑️ Завершити крок', callback_data: '{"q": "main_battle", "a": "end_step"}'},
+            ],
+            [
+                {text: '🗡 Меч хряка', callback_data: '{"q": "main_battle", "a": "weapon"}'},
+                {text: '🛡 Щіт "Оу"', callback_data: '{"q": "main_battle", "a": "left_hand"}'},
+            ],
+            [
+                {text: `❇️ Стан`, callback_data: '{"q": "main_battle", "a": "status"}'},
+                // {text: `❔ Характеристики`, callback_data: '{"q": "main_battle", "a": "charact"}'},
+            ],
+            //TODO:
+            // [
+            //     {text: '✨ Вміння', callback_data: '{"q": "main_battle", "a": "skills"}'},
+            //     {text: '👝 Предмети', callback_data: '{"q": "main_battle", "a": "take"}'},
+            // ],
+            [
+                {text: '🏃 Втекти (33%)', callback_data: '{"q": "main_battle", "a": "run"}'},
+                {text: '🚪 Здатись', callback_data: '{"q": "main_battle", "a": "surrender"}'},
+            ]
+        ]};
+    }
+
+    formLimbBattleButtons(){
+        return {
+            inline_keyboard:[
+                [
+                    {text: `Зараз ходить: ${this._currentActor.name}`, callback_data: 'null'},
+                ],
+                [
+                    {text: `🫁 Витривалість: ${this._currentActor.stamina}/${this._currentActor.maxStamina}`, callback_data: 'null'},
+                ],
+                [
+                    {text: '☑️ Завершити крок', callback_data: '{"q": "main_battle", "a": "end_step"}'},
+                ],
+                [
+                    // {text: `Твій ворог: ${this.nextActor.name} [${this.nextActor.hp}/${this.nextActor.maxHP}]`, callback_data: 'null'},
+                    {text: `Вдарити ${this.nextActor.name}  [50🫁]: [${this.nextActor.hp}/${this.nextActor.maxHP}]❤️`, callback_data: 'null'},
+                ],
+                [
+                    {text: ' ', callback_data: 'null'},
+                    {text: '😐', callback_data: '{"q": "battle_control", "a": "att_head"}'},
+                    {text: ' ', callback_data: 'null'},
+                ],
+                [
+                    {text: '🗡', callback_data: '{"q": "battle_control", "a": "att_rhand"}'},
+                    {text: '❤️', callback_data: '{"q": "battle_control", "a": "att_ches"}'},
+                    {text: '🛡', callback_data: '{"q": "battle_control", "a": "att_lhand"}'},
+                ],
+                [
+                    {text: ' ', callback_data: 'null'},
+                    {text: '🦵🦵', callback_data: '{"q": "battle_control", "a": "att_leg"}'},
+                    {text: ' ', callback_data: 'null'},
+                ],
+                [
+                    {text: '⬅️ Назад', callback_data: '{"q": "battle_control", "a": "toMain"}'},
+                ],
+            ]
+        }
+    }
+
+    formLimbFriendlyButtons(){
+        return {
+            inline_keyboard:[
+                [
+                    {text: `Зараз ходить: ${this._currentActor.name}`, callback_data: 'null'},
+                ],
+                [
+                    {text: `🫁 Витривалість: ${this._currentActor.stamina}/${this._currentActor.maxStamina}`, callback_data: 'null'},
+                ],
+                [
+                    {text: '☑️ Завершити крок', callback_data: '{"q": "main_battle", "a": "end_step"}'},
+                ],
+                [
+                    {text: 'Блокувати [50🫁]:', callback_data: '{"q": "main_battle", "a": "end_step"}'},
+                ],
+                [
+                    {text: ' ', callback_data: 'null'},
+                    {text: '😐', callback_data: '{"q": "friendly_control", "a": "use_head"}'},
+                    {text: ' ', callback_data: 'null'},
+                ],
+                [
+                    {text: '🗡', callback_data: '{"q": "friendly_control", "a": "use_rhand"}'},
+                    {text: '❤️', callback_data: '{"q": "friendly_control", "a": "use_ches"}'},
+                    {text: '🛡', callback_data: '{"q": "friendly_control", "a": "use_lhand"}'},
+                ],
+                [
+                    {text: ' ', callback_data: 'null'},
+                    {text: '🦵🦵', callback_data: '{"q": "friendly_control", "a": "use_leg"}'},
+                    {text: ' ', callback_data: 'null'},
+                ],
+                [
+                    {text: '⬅️ Назад', callback_data: '{"q": "battle_control", "a": "toMain"}'},
+                ],
+            ]
+        }
+    }
+
+    formToMenuButton(){
+        return {inline_keyboard:[
+            [
+                {text: `Зараз ходить: ${this._currentActor.name}`, callback_data: '{"q": "award_control", "a": ""}'},
+            ],
+            [
+                {text: '⬅️ Назад', callback_data: '{"q": "battle_control", "a": "toMain"}'},
+            ]
+        ]}
+    }
+
+    formEffectsMessage(){
+        return `Стан персонажа <b>${this._currentActor.name}</b>:
+Здоров'я: ${this._currentActor.hp}/${this._currentActor.maxHP}❤️
+Витривалість: ${this._currentActor.stamina}/${this._currentActor.maxStamina}🫁
+Відновлення витривалості за крок: +${this.currentActor.staminaRegenerateRate}🫁
+Точність: ${this.currentActor.hitProbability}🎯
+
+Приголомшений 💫: ${this.currentActor.isStunned ? 'Так' : 'Ні'}
+Кроків до кінця приголомшення: ${this.currentActor.stunDuration}👣
+
+😐 Захист голови: {НЕ РЕАЛІЗОВАНО}🛡
+💪💪 Захист рук: {НЕ РЕАЛІЗОВАНО}🛡
+❤️ Захист грудної клітини: {НЕ РЕАЛІЗОВАНО}🛡
+🦵🦵 Захист ніг: {НЕ РЕАЛІЗОВАНО}🛡
+
+Голова: ${this.currentActor.isHeadDamged ? '❌' : '✅'}😐
+Права рука: ${this.currentActor.isRightHandDamaged ? '❌' : '✅'}💪
+Ліва рука: ${this.currentActor.isLeftHandDamaged ? '❌' : '✅'}💪
+Грудна клітина: ${this.currentActor.isChestDamaged ? '❌' : '✅'}❤️
+Ноги: ${this.currentActor.isLegsDamaged ? '❌' : '✅'}🦵🦵
+
+Ефекти:
+⚪️ В данжі
+🟢 Регенерація (+5❤️ в секунду)
+🔴 Кровотеча (-5❤️ в секунду)`
+    }
+
+    formSkillsButtons(){
+
+    }
+
+    formItemsButtons(){
+
+    }
+
+    formConfirmRunAwayButtons(){
+        return {inline_keyboard:[
+            [
+                {text: `${this._currentActor.name}, ти дійсно хочеш втекти з шансом 33%?`, callback_data: 'null'},
+            ],
+            [
+                {text: '🏃 Втекти (33%)', callback_data: '{"q": "main_battle", "a": "surr_con"}'},
+            ],
+            [
+                {text: '⬅️ Не хочу', callback_data: '{"q": "battle_control", "a": "toMain"}'},
+            ]
+        ]}
+    }
+
+    formConfirmSurrender(){
+        return {inline_keyboard:[
+            [
+                {text: `${this._currentActor.name}, ти дійсно хочеш здатись?`, callback_data: 'null'},
+            ],
+            [
+                {text: '🚪 Здатись', callback_data: '{"q": "main_battle", "a": "sur_con"}'},
+            ],
+            [
+                {text: '⬅️ Не хочу', callback_data: '{"q": "battle_control", "a": "toMain"}'},
+            ]
+        ]}
+    }
+
+    formPassStepButtons(){
+
+    }
+
+    formAttackSelectButtons(){
+
+    }
+
+
     updateMessage(){
         this._bot.editMessageText(
-            this.formArticleText(), 
-            {inline_message_id: this._id, parse_mode: "HTML", reply_markup:{
-                inline_keyboard:[
-                    [
-                        {text: `🫁 Витривалість: 100/100`, callback_data: '{"q": "award_control", "a": "down"}'},
-                    ],
-                    [
-                        {text: `${this.nextActor.name} [${this.nextActor.hp}/${this.nextActor.maxHP}]`, callback_data: '{"q": "award_control", "a": "down"}'},
-                    ],
-                    [
-                        {text: '⚪️', callback_data: '{"q": "award_control", "a": "up"}'},
-                        {text: '😐', callback_data: '{"q": "award_control", "a": "down"}'},
-                        {text: '⚪️', callback_data: '{"q": "award_control", "a": "down"}'},
-                    ],
-                    [
-                        {text: '🗡', callback_data: '{"q": "award_control", "a": "take"}'},
-                        {text: '❤️', callback_data: '{"q": "award_control", "a": "take"}'},
-                        {text: '🛡', callback_data: '{"q": "award_control", "a": "take"}'},
-                    ],
-                    [
-                        {text: '⚪️', callback_data: '{"q": "award_control", "a": "takeAll"}'},
-                        {text: '🦵🦵', callback_data: '{"q": "award_control", "a": "takeAll"}'},
-                        {text: '⚪️', callback_data: '{"q": "award_control", "a": "takeAll"}'},
-                    ],
-                    [
-                        {text: '⬅️ Назад', callback_data: '{"q": "battle_control", "a": "end"}'},
-                    ]
-
-                    // [
-                    //     {text: `🫁 Витривалість: 100/100`, callback_data: '{"q": "award_control", "a": "down"}'},
-                    // ],
-                    // [
-                    //     {text: `❇️ Ефекти`, callback_data: '{"q": "award_control", "a": "down"}'},
-                    //     {text: `❔ Характеристики`, callback_data: '{"q": "award_control", "a": "down"}'},
-                    // ],
-                    // [
-                    //     {text: '🗡 Меч хряка', callback_data: '{"q": "award_control", "a": "up"}'},
-                    //     {text: '🛡 Щіт "Оу"', callback_data: '{"q": "award_control", "a": "down"}'},
-                    // ],
-                    // [
-                    //     {text: '✨ Вміння', callback_data: '{"q": "award_control", "a": "take"}'},
-                    // ],
-                    // [
-                    //     {text: '🧪 Зілля', callback_data: '{"q": "award_control", "a": "up"}'},
-                    //     {text: '👝 Предмети', callback_data: '{"q": "award_control", "a": "take"}'},
-                    // ],
-                    // [
-                    //     {text: '🏃 Втікти (33%)', callback_data: '{"q": "battle_control", "a": "end"}'},
-                    //     {text: '🚪 Здатись', callback_data: '{"q": "battle_control", "a": "end"}'},
-                    // ]
-                ]
-            },});
+            this._currentBattleMessageFuncton(),
+            {inline_message_id: this._id, parse_mode: "HTML", reply_markup: this._currentBattleMarkupFunction()});
     }
+
+    // updateMessage(){
+    //     this._bot.editMessageText(
+    //         this.formArticleText(), 
+    //         {inline_message_id: this._id, parse_mode: "HTML", reply_markup:{
+    //             inline_keyboard:[
+    //                 [
+    //                     {text: `🫁 Витривалість: ${this.currentActor.stamina}/${this.currentActor.maxStamina}`, callback_data: '{"q": "award_control", "a": "down"}'},
+    //                 ],
+    //                 [
+    //                     {text: `${this.nextActor.name} [${this.nextActor.hp}/${this.nextActor.maxHP}]`, callback_data: '{"q": "award_control", "a": "down"}'},
+    //                 ],
+    //                 [
+    //                     {text: '🗡 [🫁 50]', callback_data: '{"q": "b_a", "a": "aut_att"}'},
+    //                     {text: '*🗡* [🫁 100]', callback_data: '{"q": "b_a", "a": "str_att"}'},
+    //                 ],
+    //                 [
+    //                     {text: '🛡 [🫁 50]', callback_data: '{"q": "b_a", "a": "block"}'},
+    //                 ],
+    //             ]
+    //         },});
+    // }
 
     updateEndMessage(){
         this._bot.editMessageText(

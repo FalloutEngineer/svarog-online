@@ -15,6 +15,12 @@ module.exports = class Mob{
 
         this._hitProbability = mobPreset.hitProbability ?? 50;
 
+        this._maxStamina = mobPreset.baseStamina;
+        this._stamina = mobPreset.baseStamina;
+
+        this._maxStaminaRegenerateRate = mobPreset.baseStaminaRegenerateRate;
+        this._staminaRegenerateRate = mobPreset.baseStaminaRegenerateRate;
+
         this.soundEmitter = {
             ouch: function(){
                 if(this.hp == 0){
@@ -34,7 +40,10 @@ module.exports = class Mob{
             }.bind(this),
             revive: function(){
                 return `[${this.name}]: Оуу є, я воскрєс!`;
-            }.bind(this)
+            }.bind(this),
+            outOfStamina: function(){
+                return `[${this.name}]: Ой немічне, в мене не вистачило сил!`;
+            }.bind(this),
         }
     }
 
@@ -88,9 +97,29 @@ module.exports = class Mob{
         return this._hitProbability;
     }
 
+    get maxStamina(){
+        return this._maxStamina;
+    }
+
+    get stamina(){
+        return this._stamina;
+    }
+
+    set stamina(value){
+        console.log(`current mob stamina: ${value}`);
+        if(value < 0){
+            this._stamina = 0;
+        }
+        else if(value > this._maxStamina){
+            this._stamina = this._maxStamina;
+        } else{
+            this._stamina = value;
+        }
+    }
+
     //methods
 
-    async takeDamage(damage){
+    async takeDamage(damage, limb){
         
         if(this._currentHP > 0){
             let damageCount = damage;
@@ -113,6 +142,26 @@ module.exports = class Mob{
         }
 
         return answer;
+    }
+
+    async takeDamageInHead(damage){
+
+    }
+
+    async takeDamageInRightHand(damage){
+
+    }
+
+    async takeDamageInLeftHand(damage){
+
+    }
+
+    async takeDamageInChest(damage){
+
+    }
+
+    async takeDamageInLegs(damage){
+
     }
 
     async heal(health){
@@ -142,23 +191,63 @@ module.exports = class Mob{
         return answer;
     }
 
+    // attack(target){
+    //     const answer = {
+    //         code: 100,
+    //         isError: false,
+    //         answer: {isMiss: false, weapon: {name: "nothing"}}
+    //     }
+
+    //     const hitNumber = Math.floor(Math.random() * (100 - 0 + 1) + 0);
+
+    //     if(this.weapon){
+    //         answer.answer.weapon = this.weapon;
+    //         if(hitNumber < this.hitProbability){
+    //             target.takeDamage(this.weapon.damage);
+    //         }else{
+    //             answer.answer.isMiss = true;
+    //         }
+    //     }
+    //     return answer;
+    // }
+
     attack(target){
         const answer = {
             code: 100,
             isError: false,
-            answer: {isMiss: false, weapon: {name: "nothing"}}
+            answer: {isMiss: false, isOutOfStamina: false, weapon: {name: "nothing"}}
         }
-
         const hitNumber = Math.floor(Math.random() * (100 - 0 + 1) + 0);
 
         if(this.weapon){
-            answer.weapon = this.weapon;
-            if(hitNumber < this.hitProbability){
-                target.takeDamage(this.weapon.damage);
-            }else{
-                answer.isMiss = true;
+            answer.answer.weapon = this.weapon;
+            if(this.stamina >= this.weapon.staminaCost){
+                this.drainStamina(this.weapon.staminaCost);
+                if(hitNumber < this.hitProbability){
+                    target.takeDamage(this.weapon.damage);
+                }else{
+                    answer.answer.isMiss = true;
+                }
+            } else{
+                answer.answer.isOutOfStamina = true;
             }
         }
         return answer;
+    }
+
+    async drainStamina(amount){
+        this.stamina -= amount;
+    }
+
+    async regenerateStamina(amount){
+        this.stamina += amount;
+    }
+
+    async restoreStaminaForStep(){
+        this.stamina += this._staminaRegenerateRate;
+    }
+
+    async actionsBeforeStep(){
+        this.restoreStaminaForStep();
     }
 }
